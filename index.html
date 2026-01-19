@@ -1,18 +1,77 @@
-window.addEventListener('DOMContentLoaded', () => {
-  const parsedUrl = new URL(window.location.href);
-  
-  // Browsers often put the URL in the 'text' or 'url' parameter
-  const sharedUrl = parsedUrl.searchParams.get('url') || parsedUrl.searchParams.get('text');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCast Web Sender</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f0f2f5; }
+        #card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        .status { margin-top: 1rem; color: #555; font-size: 0.9rem; word-break: break-all; }
+        button { background: #0078d4; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 1rem; }
+        button:disabled { background: #ccc; }
+    </style>
+</head>
+<body>
 
-  if (sharedUrl) {
-    document.getElementById('status').innerText = `Preparing to cast: ${sharedUrl}`;
-    initiateFCast(sharedUrl);
-  }
-});
+    <div id="card">
+        <h2>FCast Sender</h2>
+        <p id="display-msg">Ready to cast</p>
+        <div id="status" class="status">Waiting for shared content...</div>
+        <button id="cast-btn" disabled>Cast Now</button>
+    </div>
 
-async function initiateFCast(mediaUrl) {
-  // logic to connect to FCast Receiver
-  // Note: Since standard Web APIs don't support raw TCP, 
-  // you would use a WebSocket bridge or an FCast Web SDK if available.
-  console.log("Casting to FCast receiver:", mediaUrl);
-}
+    <script>
+        // 1. Register Service Worker for PWA compliance
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        // 2. Handle the Shared Intent
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            // Share targets often send URLs in 'url', 'text', or 'title'
+            const sharedUrl = params.get('url') || params.get('text') || params.get('title');
+
+            if (sharedUrl) {
+                // Validate if the string contains a URL
+                const urlMatch = sharedUrl.match(/\bhttps?:\/\/\S+/gi);
+                const finalUrl = urlMatch ? urlMatch[0] : null;
+
+                if (finalUrl) {
+                    document.getElementById('display-msg').innerText = "Content Detected";
+                    document.getElementById('status').innerText = finalUrl;
+                    document.getElementById('cast-btn').disabled = false;
+                    
+                    document.getElementById('cast-btn').onclick = () => sendToFCast(finalUrl);
+                }
+            }
+        });
+
+        async function sendToFCast(url) {
+            document.getElementById('display-msg').innerText = "Sending...";
+            
+            // NOTE: Replace this URL with your Local Bridge IP/Port
+            const BRIDGE_URL = "http://localhost:3000/cast"; 
+
+            try {
+                const response = await fetch(BRIDGE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: "play", url: url })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('display-msg').innerText = "Casting Started!";
+                } else {
+                    throw new Error("Bridge connection failed");
+                }
+            } catch (err) {
+                document.getElementById('display-msg').innerText = "Error";
+                document.getElementById('status').innerText = err.message;
+            }
+        }
+    </script>
+</body>
+</html>
