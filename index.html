@@ -1,0 +1,18 @@
+window.addEventListener('DOMContentLoaded', () => {
+  const parsedUrl = new URL(window.location.href);
+  
+  // Browsers often put the URL in the 'text' or 'url' parameter
+  const sharedUrl = parsedUrl.searchParams.get('url') || parsedUrl.searchParams.get('text');
+
+  if (sharedUrl) {
+    document.getElementById('status').innerText = `Preparing to cast: ${sharedUrl}`;
+    initiateFCast(sharedUrl);
+  }
+});
+
+async function initiateFCast(mediaUrl) {
+  // logic to connect to FCast Receiver
+  // Note: Since standard Web APIs don't support raw TCP, 
+  // you would use a WebSocket bridge or an FCast Web SDK if available.
+  console.log("Casting to FCast receiver:", mediaUrl);
+}
