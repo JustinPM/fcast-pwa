@@ -1,10 +1,26 @@
-"share_target": {
-  "action": "/fcast-pwa/",
-  "method": "GET",
-  "enctype": "application/x-www-form-urlencoded",
-  "params": {
-    "title": "title",
-    "text": "text",
-    "url": "url"
+{
+  "name": "FCast PWA Sender",
+  "short_name": "FCast",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0078d4",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "share_target": {
+    "action": "./",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
   }
 }
